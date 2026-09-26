@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Finance Planner</title>
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg">
+<meta name="theme-color" content="#0f1115">
+<style>
+:root{
+  --bg:#0f1115; --card:#181b22; --card2:#20242e; --text:#eef1f6; --muted:#9aa3b2;
+  --primary:#6c8cff; --green:#3ecf8e; --red:#ff6b6b; --orange:#ffb444; --border:#2a2f3a;
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --bg:#f4f5f8; --card:#ffffff; --card2:#eef0f4; --text:#171a21; --muted:#666e7d;
+    --border:#e2e5eb;
+  }
+}
+*{box-sizing:border-box;}
+html,body{height:100%;margin:0;}
+body{
+  background:var(--bg); color:var(--text); font-family:-apple-system,Segoe UI,Roboto,sans-serif;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  -webkit-tap-highlight-color:transparent;
+}
+#app{max-width:480px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;}
+header{position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);z-index:5;padding:16px 16px 8px;display:flex;justify-content:space-between;align-items:center;}
+header h1{font-size:18px;margin:0;}
+header .headRight{display:flex;flex-direction:column;align-items:flex-end;gap:2px;}
+header span{color:var(--muted);font-size:13px;}
+#sync{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:4px;cursor:pointer;}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block;}
+.sync-dot.off{background:var(--orange);}
+main{flex:1;padding:8px 16px 90px;overflow-x:hidden;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:12px;}
+.row{display:flex;justify-content:space-between;align-items:center;}
+.big{font-size:28px;font-weight:700;}
+.muted{color:var(--muted);font-size:13px;}
+.hint{color:var(--muted);font-size:12px;margin-top:6px;}
+.bar-bg{background:var(--card2);border-radius:8px;height:10px;overflow:hidden;margin:8px 0;}
+.bar-fill{height:100%;background:var(--primary);border-radius:8px;transition:width .3s;}
+.bar-fill.over{background:var(--red);}
+.item,.goal-item,.cat-item,.tx-item{background:var(--card2);border-radius:12px;padding:12px;margin-bottom:8px;}
+.item .row,.goal-item .row,.cat-item .row{margin-bottom:4px;}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px;text-align:center;}
+.stat b{font-size:18px;display:block;margin-top:4px;}
+.positive{color:var(--green);}
+.negative{color:var(--red);}
+.accent{color:var(--primary);}
+nav{position:fixed;bottom:0;left:0;right:0;max-width:480px;margin:0 auto;background:var(--card);border-top:1px solid var(--border);
+  display:flex;padding-bottom:env(safe-area-inset-bottom,0px);z-index:10;}
+nav button{flex:1;background:none;border:none;color:var(--muted);padding:12px 4px;font-size:11px;display:flex;flex-direction:column;align-items:center;gap:2px;}
+nav button.active{color:var(--primary);}
+nav button .ic{font-size:20px;}
+.btn{background:var(--primary);color:#fff;border:none;border-radius:12px;padding:12px 16px;font-size:15px;font-weight:600;width:100%;}
+.btn.secondary{background:var(--card2);color:var(--text);}
+.btn.danger{background:var(--red);color:#fff;}
+.btn.small{width:auto;padding:8px 14px;font-size:13px;}
+input,select{width:100%;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px;color:var(--text);font-size:15px;margin-bottom:10px;}
+label{font-size:13px;color:var(--muted);display:block;margin-bottom:4px;}
+.fab{position:fixed;bottom:calc(70px + env(safe-area-inset-bottom,0px));left:16px;background:var(--primary);color:#fff;border:none;
+  width:52px;height:52px;border-radius:50%;font-size:24px;box-shadow:0 4px 12px rgba(0,0,0,.3);z-index:9;max-width:480px;}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:flex-end;z-index:20;}
+.modal{background:var(--bg);border-radius:20px 20px 0 0;padding:20px;width:100%;max-width:480px;margin:0 auto;padding-bottom:calc(24px + env(safe-area-inset-bottom,0px));max-height:85vh;overflow-y:auto;}
+.modal h3{margin-top:0;}
+.hidden{display:none !important;}
+.pill{display:inline-block;background:var(--card2);padding:2px 8px;border-radius:20px;font-size:11px;color:var(--muted);}
+.empty{text-align:center;color:var(--muted);padding:30px 0;font-size:14px;}
+#installBanner{position:fixed;bottom:calc(70px + env(safe-area-inset-bottom,0px) + 8px);left:16px;right:16px;max-width:448px;margin:0 auto;
+  background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;z-index:8;}
+.toast{position:fixed;bottom:calc(80px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);
+  background:var(--card2);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:10px 18px;
+  font-size:13px;z-index:30;max-width:90%;text-align:center;animation:fadein .2s ease;}
+@keyframes fadein{from{opacity:0;transform:translate(-50%,8px)}to{opacity:1;transform:translate(-50%,0)}}
+</style></head>
+
+<div id="app">
+  <header>
+    <h1 id="title">Finance Planner</h1>
+    <div class="headRight">
+      <span id="month"></span>
+      <span id="sync" onclick="syncNow()"><i class="sync-dot"></i>محلي</span>
+    </div>
+  </header>
+  <main id="main"></main>
+  <button class="fab hidden" id="fab">+</button>
+  <nav>
+    <button data-page="home" class="active"><span class="ic">🏠</span>الرئيسية</button>
+    <button data-page="budget"><span class="ic">📊</span>الميزانية</button>
+    <button data-page="goals"><span class="ic">🎯</span>الأهداف</button>
+    <button data-page="tx"><span class="ic">💸</span>العمليات</button>
+    <button data-page="settings"><span class="ic">⚙️</span>الإعدادات</button>
+  </nav>
+</div>
+<div id="modalRoot"></div>
+<div id="installBanner" class="hidden">
+  <span style="font-size:13px">ثبّت التطبيق على شاشتك الرئيسية 🚀</span>
+  <div>
+    <button class="btn small" id="installBtn">تثبيت</button>
+    <button class="btn small secondary" id="dismissInstall">لاحقًا</button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./app.js"></script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+{
+  "name": "Finance Planner",
+  "short_name": "Finance",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0f1115",
+  "theme_color": "#0f1115",
+  "dir": "rtl",
+  "lang": "ar",
+  "icons": [
+    { "src": "./icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
