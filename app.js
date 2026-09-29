@@ -115,6 +115,18 @@ async function pullRemote(){
 }
 async function syncNow(){if(!navigator.onLine){toast("مفيش إنترنت دلوقتي");return}if(syncing)return;syncing=true;try{await flushQueue();if((await queueAll()).length===0)await pullRemote();render();toast("تمت المزامنة")}catch(e){console.warn(e);setSync(false);toast("تعذر المزامنة — بياناتك المحلية محفوظة")}finally{syncing=false}}
 async function bootstrap(){const cached=await localGet().catch(()=>null);if(cached){state=cached;await checkMonthRollover();render();setSync(false)}try{await flushQueue();if((await queueAll()).length===0){await pullRemote();await checkMonthRollover();render();setSync(true)}}catch(e){console.warn(e);toast("اشتغلنا من البيانات المحلية");setSync(false)}}
+async function autoSync(){
+ if(syncing||!navigator.onLine)return;
+ syncing=true;
+ try{
+   await flushQueue();
+   if((await queueAll()).length===0){ await pullRemote(); render(); }
+ }catch(e){console.warn('autoSync',e)}
+ finally{syncing=false}
+}
+document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible') autoSync(); });
+window.addEventListener('focus',autoSync);
+setInterval(()=>{ if(navigator.onLine) autoSync(); }, 45000);
 window.addEventListener("online",()=>{toast("رجع الإنترنت — جاري المزامنة");syncNow()});
 
 async function saveInsert(table,obj,localApply){localApply();await mutate({op:"insert",table,payload:obj});render()}

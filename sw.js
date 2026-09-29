@@ -1,4 +1,4 @@
-const CACHE = 'finance-planner-v3';
+const CACHE = 'finance-planner-v4';
 const ASSETS = ['./', './index.html', './app.js', './manifest.webmanifest', './icon.svg'];
 
 self.addEventListener('install', e => {
