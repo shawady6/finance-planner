@@ -76,7 +76,12 @@ label{font-size:13px;color:var(--muted);display:block;margin-bottom:4px;}
   background:var(--card2);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:10px 18px;
   font-size:13px;z-index:30;max-width:90%;text-align:center;animation:fadein .2s ease;}
 @keyframes fadein{from{opacity:0;transform:translate(-50%,8px)}to{opacity:1;transform:translate(-50%,0)}}
-</style></head>
+#login{position:fixed;inset:0;background:var(--bg);z-index:50;display:flex;align-items:center;justify-content:center;padding:24px;}
+#login .box{width:100%;max-width:360px;}
+#login h2{margin:0 0 4px;font-size:22px;}
+#loginMsg{color:var(--red);font-size:13px;min-height:18px;margin:6px 0;}
+</style>
+</head>
 
 <div id="app">
   <header>
@@ -93,6 +98,7 @@ label{font-size:13px;color:var(--muted);display:block;margin-bottom:4px;}
     <button data-page="budget"><span class="ic">📊</span>الميزانية</button>
     <button data-page="goals"><span class="ic">🎯</span>الأهداف</button>
     <button data-page="tx"><span class="ic">💸</span>العمليات</button>
+    <button data-page="debts"><span class="ic">🤝</span>الديون</button>
     <button data-page="settings"><span class="ic">⚙️</span>الإعدادات</button>
   </nav>
 </div>
@@ -105,6 +111,16 @@ label{font-size:13px;color:var(--muted);display:block;margin-bottom:4px;}
   </div>
 </div>
 
+<div id="login" class="hidden">
+  <div class="box">
+    <h2>💰 Finance Planner</h2>
+    <div class="muted" style="margin-bottom:16px">سجّل دخولك عشان تفتح بياناتك</div>
+    <label>الإيميل</label><input id="loginEmail" type="email" autocomplete="username">
+    <label>الباسورد</label><input id="loginPass" type="password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+    <div id="loginMsg"></div>
+    <button class="btn" onclick="doLogin()">دخول</button>
+  </div>
+</div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="./app.js"></script>
 </body>
