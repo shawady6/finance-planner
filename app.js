@@ -145,7 +145,7 @@ function render(){
 }
 function renderVaultCard(type){
  const bal=vaultBalance(type);
- const label=type==='piggy'?'🐷 الحصالة':'🆘 صندوق الطوارئ';
+ const label=type==='piggy'?'💰 الحصالة':'🆘 صندوق الطوارئ';
  const sub=type==='piggy'?'باقي الأساسيات والادخار':'تلقائي من الطوارئ';
  return `<div class="card" style="border-color:var(--green)"><div class="row"><b>${label}</b><span class="pill">${sub}</span></div><div class="big positive">${money(bal)}</div><div style="display:flex;gap:6px;margin-top:8px"><button class="btn small" onclick="withdrawVault('${type}')">سحب</button><button class="btn small secondary" onclick="openVaultGoalTransfer('${type}')">تحويل لهدف</button><button class="btn small secondary" onclick="showVaultLog('${type}')">السجل</button></div></div>`;
 }
@@ -167,7 +167,7 @@ function renderLastMonthReview(){
    return {c,left};
  }).filter(x=>x.left>0.009 && !isTransferred(x.c.id,lm));
  if(!rows.length) return `<div class="card"><b>📅 مراجعة ${monthName(lm)}</b><div class="empty">مفيش باقي محتاج تحويل من الشهر ده.</div></div>`;
- return `<div class="card"><b>📅 مراجعة ${monthName(lm)}</b><div class="hint">حوّل الباقي من كل فئة للحصالة أو لصندوق الطوارئ</div></div>`+rows.map(({c,left})=>`<div class="item"><div class="row"><b>${esc(c.icon)} ${esc(c.name)}</b><span class="positive">${money(left)}</span></div><div style="display:flex;gap:6px;margin-top:7px"><button class="btn small" onclick="transferLeftover('${c.id}','piggy','${lm}')">🐷 للحصالة</button><button class="btn small secondary" onclick="transferLeftover('${c.id}','emergency','${lm}')">🆘 لصندوق الطوارئ</button></div></div>`).join("");
+ return `<div class="card"><b>📅 مراجعة ${monthName(lm)}</b><div class="hint">حوّل الباقي من كل فئة للحصالة أو لصندوق الطوارئ</div></div>`+rows.map(({c,left})=>`<div class="item"><div class="row"><b>${esc(c.icon)} ${esc(c.name)}</b><span class="positive">${money(left)}</span></div><div style="display:flex;gap:6px;margin-top:7px"><button class="btn small" onclick="transferLeftover('${c.id}','piggy','${lm}')">💰 للحصالة</button><button class="btn small secondary" onclick="transferLeftover('${c.id}','emergency','${lm}')">🆘 لصندوق الطوارئ</button></div></div>`).join("");
 }
 function toggleLastMonthReview(){showLastMonthReview=!showLastMonthReview;render()}
 function renderCommitments(catId,mk){
@@ -183,7 +183,7 @@ function renderSubCats(catId,mk){
  if(!kids.length)return '';
  return `<div style="margin-top:8px;border-top:1px solid var(--border);padding-top:8px">`+kids.map(k=>{
    const sp=spent(k.id,mk);
-   return `<div class="row" style="margin-bottom:6px"><span class="muted">↳ ${esc(k.icon||'▫️')} ${esc(k.name)}</span><span>${money(sp)}</span><button class="btn secondary small" style="padding:4px 8px" onclick="quickSpend('${k.id}')">+</button><button class="btn secondary small" style="padding:4px 8px" onclick="deleteSubCat('${k.id}')">✕</button></div>`;
+   return `<div class="row" style="margin-bottom:6px"><span class="muted">↳ ${esc(k.icon||'▫️')} ${esc(k.name)}</span><span>${money(sp)}</span><button class="btn secondary small" style="padding:4px 8px" onclick="quickSpend('${k.id}')">+</button><button class="btn secondary small" style="padding:4px 8px" onclick="showCatLog('${k.id}')">📋</button><button class="btn secondary small" style="padding:4px 8px" onclick="deleteSubCat('${k.id}')">✕</button></div>`;
  }).join("")+`</div>`;
 }
 function budget(){const m=selectedMonth||monthKey(),total=totalPct();
@@ -265,7 +265,7 @@ function debts(){
  return `<div class="card"><div class="row"><b>🟢 ليا عند الناس</b><button class="btn small" onclick="openLendModal()">+ سلفة جديدة</button></div></div>${lent.length?lent.map(debtCard).join(""):'<div class="empty">مفيش سلف لسه.</div>'}<div class="card"><div class="row"><b>🔴 عليّ للناس</b><button class="btn small" onclick="openBorrowModal()">+ دين جديد</button></div></div>${owed.length?owed.map(debtCard).join(""):'<div class="empty">مفيش ديون عليك.</div>'}`;
 }
 function openLendModal(){
- modal('سلفة لحد',`<label>اسم الشخص</label><input id="dPerson"><label>المبلغ</label><input id="dAmount" type="number"><label>الغرض (اختياري)</label><input id="dPurpose"><label>تاريخ السداد المتوقع (اختياري)</label><input id="dDue" type="date"><label>المصدر</label><select id="dSource"><option value="piggy">🐷 الحصالة</option><option value="emergency">🆘 صندوق الطوارئ</option><option value="outside">من برة الميزانية</option></select><button class="btn" style="width:100%" onclick="confirmLend()">تأكيد</button>`);
+ modal('سلفة لحد',`<label>اسم الشخص</label><input id="dPerson"><label>المبلغ</label><input id="dAmount" type="number"><label>الغرض (اختياري)</label><input id="dPurpose"><label>تاريخ السداد المتوقع (اختياري)</label><input id="dDue" type="date"><label>المصدر</label><select id="dSource"><option value="piggy">💰 الحصالة</option><option value="emergency">🆘 صندوق الطوارئ</option><option value="outside">من برة الميزانية</option></select><button class="btn" style="width:100%" onclick="confirmLend()">تأكيد</button>`);
 }
 async function confirmLend(){
  const person=$("#dPerson").value.trim(),amount=Number($("#dAmount").value),source=$("#dSource").value;
@@ -351,7 +351,21 @@ function catOptionsHtml(selectedId){
 function openTx(id){const old=id?state.transactions.find(x=>x.id===id):null,opts=catOptionsHtml(old?.category_id);modal(old?'تعديل العملية':'إضافة عملية',`<label>النوع</label><select id="tt"><option value="expense" ${old?.type==='expense'?'selected':''}>مصروف</option><option value="income" ${old?.type==='income'?'selected':''}>دخل</option><option value="saving" ${old?.type==='saving'?'selected':''}>ادخار</option></select><label>الفئة</label><select id="tc">${opts}</select><label>المبلغ</label><input id="ta" type="number" value="${old?.amount||''}"><label>التاريخ</label><input id="td" type="date" value="${old?.date||new Date().toISOString().slice(0,10)}"><label>ملاحظة</label><input id="tn" value="${esc(old?.note||'')}"><button class="btn" style="width:100%" onclick="saveTx('${id||''}')">${old?'حفظ':'إضافة'}</button>${old?`<button class="btn danger" style="width:100%;margin-top:7px" onclick="deleteTx('${id}')">حذف العملية</button>`:''}`)}
 async function saveTx(id){const amount=Number($("#ta").value);if(amount<=0)return;const date=$("#td").value||new Date().toISOString().slice(0,10);const obj={id:id||uid(),type:$("#tt").value,category_id:$("#tc").value,amount,date,month:monthKey(date),note:$("#tn").value||""};closeModal();if(id)await saveUpdate("transactions",id,obj,()=>{const i=state.transactions.findIndex(x=>x.id===id);if(i>=0)state.transactions[i]=obj});else await saveInsert("transactions",obj,()=>state.transactions.unshift(obj));toast("تم حفظ العملية")}
 async function deleteTx(id){if(!confirm('تحذف العملية؟'))return;closeModal();await saveDelete('transactions',id,()=>{state.transactions=state.transactions.filter(x=>x.id!==id)});toast('اتحذفت العملية')}
-async function quickSpend(catId){const amount=Number(prompt('المبلغ؟'));if(!amount||amount<=0)return;const obj={id:uid(),type:'expense',category_id:catId,amount,date:new Date().toISOString().slice(0,10),month:monthKey(),note:''};await saveInsert('transactions',obj,()=>state.transactions.unshift(obj));toast('اتسجل المصروف')}
+async function quickSpend(catId){
+ const name=prompt('اسم الحاجة اللي اتصرفت عليها؟ (اختياري)')||'';
+ const amount=Number(prompt('المبلغ؟'));
+ if(!amount||amount<=0)return;
+ const obj={id:uid(),type:'expense',category_id:catId,amount,date:new Date().toISOString().slice(0,10),month:monthKey(),note:name};
+ await saveInsert('transactions',obj,()=>state.transactions.unshift(obj));
+ toast('اتسجل المصروف');
+}
+function showCatLog(catId){
+ const mk=monthKey();
+ const cat=state.categories.find(x=>x.id===catId);
+ const items=state.transactions.filter(t=>t.category_id===catId&&t.month===mk&&t.type==='expense').sort((a,b)=>String(b.date).localeCompare(String(a.date)));
+ const body=items.length?items.map(t=>`<div class="item row"><div><b>${esc(t.note||'بدون اسم')}</b><div class="muted">${esc(t.date)}</div></div><b class="negative">${money(t.amount)}</b></div>`).join(""):'<div class="empty">مفيش عمليات مسجلة الشهر ده.</div>';
+ modal('سجل '+(cat?.name||''),body);
+}
 function openGoal(id){const old=id?state.goals.find(x=>x.id===id):null;modal(old?'تعديل الهدف':'هدف مالي جديد',`<label>الاسم</label><input id="gn" value="${esc(old?.name||'')}" placeholder="مثال: iPhone"><label>الرمز</label><input id="gi" value="${esc(old?.icon||'🎯')}"><label>المبلغ المستهدف</label><input id="gt" type="number" value="${old?.target_amount||''}"><label>المساهمة الشهرية</label><input id="gm" type="number" value="${old?.monthly_target||''}"><label>الحالة</label><select id="gs"><option value="active" ${old?.status!=='completed'?'selected':''}>نشط</option><option value="completed" ${old?.status==='completed'?'selected':''}>مكتمل</option></select><button class="btn" style="width:100%" onclick="saveGoal('${id||''}')">${old?'حفظ':'إنشاء الهدف'}</button>`)}
 async function saveGoal(id){const name=$("#gn").value.trim(),target=Number($("#gt").value);if(!name||target<=0)return;const obj={id:id||uid(),name,icon:$("#gi").value||'🎯',target_amount:target,current_amount:id?Number(state.goals.find(g=>g.id===id)?.current_amount||0):0,monthly_target:Number($("#gm").value)||0,status:$("#gs").value};closeModal();if(id)await saveUpdate('goals',id,obj,()=>Object.assign(state.goals.find(g=>g.id===id),obj));else await saveInsert('goals',obj,()=>state.goals.push(obj));toast('تم حفظ الهدف')}
 async function deleteGoal(id){if(!confirm('تحذف الهدف وكل مساهماته؟'))return;await saveDelete('goals',id,()=>{state.goals=state.goals.filter(g=>g.id!==id);state.contribs=state.contribs.filter(c=>c.goal_id!==id)});for(const c of state.contribs.filter(c=>c.goal_id===id))await remote('delete','goal_contributions',null,c.id);toast('اتحذف الهدف')}
@@ -402,8 +416,20 @@ async function deleteSubCat(id){
  if(!confirm('تحذف الفئة الفرعية دي؟ العمليات المسجلة عليها هتفضل موجودة بس من غير تصنيف.'))return;
  await saveUpdate('categories',id,{active:false},()=>{const c=state.categories.find(x=>x.id===id);if(c)c.active=false});
 }
-function openCat(id){const old=id?state.categories.find(x=>x.id===id):null;modal(old?'تعديل الفئة':'إضافة فئة',`<label>الاسم</label><input id="cn" value="${esc(old?.name||'')}"><label>الرمز</label><input id="ci" value="${esc(old?.icon||'🏷️')}"><label>النسبة %</label><input id="cp" type="number" value="${old?.percentage??''}"><label>النوع</label><select id="ct"><option value="fixed" ${old?.type==='fixed'?'selected':''}>ثابتة</option><option value="flexible" ${old?.type==='flexible'?'selected':''}>مرنة</option><option value="rollover" ${old?.type==='rollover'?'selected':''}>تراكمية</option><option value="goal-linked" ${old?.type==='goal-linked'?'selected':''}>مرتبطة بهدف</option></select><button class="btn" style="width:100%" onclick="saveCat('${id||''}')">${old?'حفظ':'إضافة'}</button>${old?`<button class="btn secondary" style="width:100%;margin-top:7px" onclick="toggleCat('${id}')">${old.active?'تعطيل':'تفعيل'} الفئة</button>`:''}`)}
-async function saveCat(id){const name=$("#cn").value.trim(),p=Number($("#cp").value);if(!name||p<0||p>100)return;const obj={id:id||uid(),name,icon:$("#ci").value||'🏷️',percentage:p,type:$("#ct").value,active:id?state.categories.find(x=>x.id===id).active:true};closeModal();if(id)await saveUpdate('categories',id,obj,()=>Object.assign(state.categories.find(c=>c.id===id),obj));else await saveInsert('categories',obj,()=>state.categories.push(obj));await upsertSnapshot();toast('تم حفظ الفئة')}
+function openCat(id){const old=id?state.categories.find(x=>x.id===id):null;modal(old?'تعديل الفئة':'إضافة فئة',`<label>الاسم</label><input id="cn" value="${esc(old?.name||'')}"><label>الرمز</label><input id="ci" value="${esc(old?.icon||'🏷️')}"><label>النسبة %</label><input id="cp" type="number" value="${old?.percentage??''}"><label>النوع</label><select id="ct"><option value="fixed" ${old?.type==='fixed'?'selected':''}>ثابتة</option><option value="flexible" ${old?.type==='flexible'?'selected':''}>مرنة</option><option value="rollover" ${old?.type==='rollover'?'selected':''}>تراكمية</option><option value="goal-linked" ${old?.type==='goal-linked'?'selected':''}>مرتبطة بهدف</option></select>${old?'':`<label>فئات فرعية (اختياري) — افصل بفاصلة</label><input id="cSubs" placeholder="الأكل والشرب, المواصلات"><label>التزامات شهرية (اختياري) — الاسم:المبلغ، افصل بفاصلة</label><input id="cCommits" placeholder="إنترنت:300, موبايل:100">`}<button class="btn" style="width:100%" onclick="saveCat('${id||''}')">${old?'حفظ':'إضافة'}</button>${old?`<button class="btn secondary" style="width:100%;margin-top:7px" onclick="toggleCat('${id}')">${old.active?'تعطيل':'تفعيل'} الفئة</button>`:''}`)}
+async function saveCat(id){
+ const name=$("#cn").value.trim(),p=Number($("#cp").value);if(!name||p<0||p>100)return;
+ const obj={id:id||uid(),name,icon:$("#ci").value||'🏷️',percentage:p,type:$("#ct").value,active:id?state.categories.find(x=>x.id===id).active:true};
+ closeModal();
+ if(id){await saveUpdate('categories',id,obj,()=>Object.assign(state.categories.find(c=>c.id===id),obj));await upsertSnapshot();toast('تم حفظ الفئة');return}
+ await saveInsert('categories',obj,()=>state.categories.push(obj));
+ const subsRaw=$("#cSubs")?.value.trim();
+ if(subsRaw){for(const subName of subsRaw.split(',').map(s=>s.trim()).filter(Boolean)){const sub={id:uid(),name:subName,icon:'▫️',percentage:0,type:'flexible',active:true,parent_id:obj.id};await saveInsert('categories',sub,()=>state.categories.push(sub))}}
+ const commitsRaw=$("#cCommits")?.value.trim();
+ if(commitsRaw){for(const part of commitsRaw.split(',').map(s=>s.trim()).filter(Boolean)){const [cname,camount]=part.split(':').map(s=>s.trim());const amt=Number(camount);if(cname&&amt>0){const cm={id:uid(),name:cname,category_id:obj.id,expected_amount:amt,due_day:null,active:true};await saveInsert('commitments',cm,()=>state.commitments.push(cm))}}}
+ await upsertSnapshot();
+ toast('تم حفظ الفئة');
+}
 async function toggleCat(id){const c=state.categories.find(x=>x.id===id);if(!c)return;closeModal();await saveUpdate('categories',id,{active:!c.active},()=>c.active=!c.active);await upsertSnapshot();toast('تم تحديث الفئة')}
 async function saveSettings(){const patch={monthly_salary:Number($("#salary").value)||0,currency:$("#currency").value||'EGP',month_start_day:Math.min(28,Math.max(1,Number($("#startDay").value)||1)),updated_at:new Date().toISOString()};await saveUpdate('settings',state.settings.id,patch,()=>Object.assign(state.settings,patch));await upsertSnapshot();toast('اتحفظت الإعدادات')}
 async function exportData(){const data={version:2,exported_at:new Date().toISOString(),state};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`finance-planner-${monthKey()}.json`;a.click();URL.revokeObjectURL(a.href)}
