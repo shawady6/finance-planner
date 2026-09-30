@@ -84,7 +84,7 @@ async function remote(op,table,payload,id){
  try{let q;if(op==="insert")q=sb.from(table).insert(payload);if(op==="update")q=sb.from(table).update(payload).eq("id",id);if(op==="delete")q=sb.from(table).delete().eq("id",id);const {error}=await q;if(error)throw error;return true}catch(e){console.warn("remote",op,table,e);return false}
 }
 async function mutate(op){await localPut();const ok=await remote(op.op,op.table,op.payload,op.id);if(ok)setSync(true);else{await queueAdd(op);setSync(false)}}
-async function flushQueue(){if(syncing||!navigator.onLine)return;syncing=true;try{for(const q of await queueAll()){const ok=await remote(q.op,q.table,q.payload,q.id);if(!ok)break;await queueDelete(q.qid)}setSync((await queueAll()).length===0)}finally{syncing=false}}
+async function flushQueue(){if(syncing||!navigator.onLine)return;syncing=true;try{for(const q of await queueAll()){if(!navigator.onLine)break;const ok=await remote(q.op,q.table,q.payload,q.id);if(ok)await queueDelete(q.qid)}setSync((await queueAll()).length===0)}finally{syncing=false}}
 async function pullRemote(){
  const [s,c,g,co,t,vt,mb,cm,db,dp]=await Promise.all([
   sb.from("settings").select("*").limit(1),
@@ -113,14 +113,14 @@ async function pullRemote(){
  if(dp.data)state.debtPayments=dp.data;
  await localPut();
 }
-async function syncNow(){if(!navigator.onLine){toast("مفيش إنترنت دلوقتي");return}if(syncing)return;syncing=true;try{await flushQueue();if((await queueAll()).length===0)await pullRemote();render();toast("تمت المزامنة")}catch(e){console.warn(e);setSync(false);toast("تعذر المزامنة — بياناتك المحلية محفوظة")}finally{syncing=false}}
-async function bootstrap(){const cached=await localGet().catch(()=>null);if(cached){state=cached;await checkMonthRollover();render();setSync(false)}try{await flushQueue();if((await queueAll()).length===0){await pullRemote();await checkMonthRollover();render();setSync(true)}}catch(e){console.warn(e);toast("اشتغلنا من البيانات المحلية");setSync(false)}}
+async function syncNow(){if(!navigator.onLine){toast("مفيش إنترنت دلوقتي");return}if(syncing)return;syncing=true;try{await flushQueue();await pullRemote();render();toast("تمت المزامنة")}catch(e){console.warn(e);setSync(false);toast("تعذر المزامنة — بياناتك المحلية محفوظة")}finally{syncing=false}}
+async function bootstrap(){const cached=await localGet().catch(()=>null);if(cached){state=cached;await checkMonthRollover();render();setSync(false)}try{await flushQueue();if(navigator.onLine){await pullRemote();await checkMonthRollover();render();setSync((await queueAll()).length===0)}}catch(e){console.warn(e);toast("اشتغلنا من البيانات المحلية");setSync(false)}}
 async function autoSync(){
  if(syncing||!navigator.onLine)return;
  syncing=true;
  try{
    await flushQueue();
-   if((await queueAll()).length===0){ await pullRemote(); render(); }
+   await pullRemote(); render();
  }catch(e){console.warn('autoSync',e)}
  finally{syncing=false}
 }
