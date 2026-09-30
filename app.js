@@ -20,12 +20,15 @@ function money(n){return (Number(n)||0).toLocaleString("en-US",{maximumFractionD
 function monthKey(date=new Date()){const d=new Date(date),start=Number(state.settings.month_start_day)||1;let y=d.getFullYear(),m=d.getMonth();if(d.getDate()<start){m--;if(m<0){m=11;y--}}return `${y}-${String(m+1).padStart(2,"0")}`}
 function monthName(k){const n=["يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"];let [y,m]=k.split("-");return `${n[+m-1]} ${y}`}
 function activeCats(){return state.categories.filter(c=>c.active)}
-function totalPct(){return activeCats().reduce((s,c)=>s+Number(c.percentage||0),0)}
+function totalPct(){return topLevelCats().reduce((s,c)=>s+Number(c.percentage||0),0)}
 function allocated(c,mk=monthKey()){
  const snap=state.snapshots.find(s=>s.month===mk);
  if(snap){const sc=(snap.categories||[]).find(x=>x.id===c.id);if(sc)return Number(snap.monthly_salary||0)*Number(sc.percentage||0)/100}
  return Number(state.settings.monthly_salary||0)*Number(c.percentage||0)/100;
 }
+function topLevelCats(){return activeCats().filter(c=>!c.parent_id)}
+function childCats(catId){return activeCats().filter(c=>c.parent_id===catId)}
+function spentIncludingChildren(catId,mk=monthKey()){return spent(catId,mk)+childCats(catId).reduce((s,ch)=>s+spent(ch.id,mk),0)}
 function vaultBalance(type){return state.vaultTx.filter(t=>t.vault_type===type).reduce((s,t)=>s+(t.direction==='deposit'?Number(t.amount):-Number(t.amount)),0)}
 function isTransferred(catId,mk){return state.vaultTx.some(t=>t.category_id===catId&&t.month===mk&&t.direction==='deposit')}
 function unpaidTotal(catId,mk=monthKey()){return state.commitments.filter(cm=>cm.category_id===catId&&cm.active&&!isCommitmentChecked(cm.id,mk)).reduce((s,cm)=>s+Number(cm.expected_amount||0),0)}
@@ -175,11 +178,19 @@ function renderCommitments(catId,mk){
    return `<div class="row" style="margin-bottom:6px"><label style="display:flex;align-items:center;gap:6px;margin:0;flex:1;cursor:pointer"><input type="checkbox" style="width:auto;margin:0" ${checked?'checked':''} onchange="toggleCommitment('${cm.id}',this.checked)"><span style="${checked?'text-decoration:line-through;color:var(--muted)':''}">${esc(cm.name)}</span></label><span class="muted">${money(cm.expected_amount)}</span><button class="btn secondary small" style="padding:4px 8px;margin-right:4px" onclick="deleteCommitment('${cm.id}')">✕</button></div>`;
  }).join("")+`</div>`;
 }
+function renderSubCats(catId,mk){
+ const kids=childCats(catId);
+ if(!kids.length)return '';
+ return `<div style="margin-top:8px;border-top:1px solid var(--border);padding-top:8px">`+kids.map(k=>{
+   const sp=spent(k.id,mk);
+   return `<div class="row" style="margin-bottom:6px"><span class="muted">↳ ${esc(k.icon||'▫️')} ${esc(k.name)}</span><span>${money(sp)}</span><button class="btn secondary small" style="padding:4px 8px" onclick="quickSpend('${k.id}')">+</button><button class="btn secondary small" style="padding:4px 8px" onclick="deleteSubCat('${k.id}')">✕</button></div>`;
+ }).join("")+`</div>`;
+}
 function budget(){const m=selectedMonth||monthKey(),total=totalPct();
  const review=showLastMonthReview?renderLastMonthReview():'';
- return `<div class="card"><div class="row"><b>ميزانية ${monthName(m)}</b><b class="${total===100?'positive':total>100?'negative':'accent'}">${total}%</b></div><div class="hint">الراتب الأساسي ${money(state.settings.monthly_salary)} · <button class="btn secondary small" onclick="changeMonth('${m}')">تغيير الشهر</button></div></div><button class="btn secondary" style="width:100%;margin-bottom:12px" onclick="toggleLastMonthReview()">📅 ${showLastMonthReview?'إخفاء':'عرض'} الشهر اللي فات</button>${review}${activeCats().map(c=>{
-   const a=allocated(c,m),s=spent(c.id,m),unpaid=unpaidTotal(c.id,m),remaining=Math.max(0,a-s-unpaid),remPct=pct(remaining,a),over=(s+unpaid)>=a,warn=!over&&remPct<=20;
-   return `<div class="item"><div class="row"><b>${esc(c.icon||'🏷️')} ${esc(c.name)}</b><span>${c.percentage}%</span></div><div class="bar-bg"><div class="bar-fill ${over?'over':warn?'warn':''}" style="width:${remPct}%"></div></div><div class="row muted"><span>${money(s)} مستخدم${unpaid>0.009?' + '+money(unpaid)+' التزامات':''}</span><span>باقي فعلي ${money(remaining)}</span></div>${renderCommitments(c.id,m)}<div style="display:flex;gap:6px;margin-top:8px"><button class="btn small" onclick="quickSpend('${c.id}')">+ مصروف</button><button class="btn secondary small" onclick="openCat('${c.id}')">تعديل</button><button class="btn secondary small" onclick="openCommitmentModal('${c.id}')">+ التزام</button></div></div>`;
+ return `<div class="card"><div class="row"><b>ميزانية ${monthName(m)}</b><b class="${total===100?'positive':total>100?'negative':'accent'}">${total}%</b></div><div class="hint">الراتب الأساسي ${money(state.settings.monthly_salary)} · <button class="btn secondary small" onclick="changeMonth('${m}')">تغيير الشهر</button></div></div><button class="btn secondary" style="width:100%;margin-bottom:12px" onclick="toggleLastMonthReview()">📅 ${showLastMonthReview?'إخفاء':'عرض'} الشهر اللي فات</button>${review}${topLevelCats().map(c=>{
+   const a=allocated(c,m),s=spentIncludingChildren(c.id,m),unpaid=unpaidTotal(c.id,m),remaining=Math.max(0,a-s-unpaid),remPct=pct(remaining,a),over=(s+unpaid)>=a,warn=!over&&remPct<=20;
+   return `<div class="item"><div class="row"><b>${esc(c.icon||'🏷️')} ${esc(c.name)}</b><b class="${over?'negative':warn?'accent':'positive'}">${money(remaining)}</b></div><div class="bar-bg"><div class="bar-fill ${over?'over':warn?'warn':''}" style="width:${remPct}%"></div></div><div class="row muted"><span>${c.percentage}% من الراتب</span><span>مستخدم ${money(s)}${unpaid>0.009?' + '+money(unpaid)+' التزامات':''}</span></div>${renderCommitments(c.id,m)}${renderSubCats(c.id,m)}<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap"><button class="btn small" onclick="quickSpend('${c.id}')">+ مصروف</button><button class="btn secondary small" onclick="openCat('${c.id}')">تعديل</button><button class="btn secondary small" onclick="openCommitmentModal('${c.id}')">+ التزام</button><button class="btn secondary small" onclick="openSubCatModal('${c.id}')">+ فئة فرعية</button></div></div>`;
  }).join("")}<button class="btn secondary" style="width:100%" onclick="openCat()">+ إضافة فئة</button>`}
 function promptMonth(current){const v=prompt("اكتب الشهر بصيغة YYYY-MM",current);return /^\d{4}-(0[1-9]|1[0-2])$/.test(v||"")?v:current}
 function changeMonth(current){selectedMonth=promptMonth(current);render()}
@@ -330,7 +341,14 @@ function showDebtLog(id){
 }
 function modal(title,body){$("#modalRoot").innerHTML=`<div class="modal-bg" onclick="if(event.target===this)closeModal()"><div class="modal"><div class="row"><h3>${title}</h3><button class="btn secondary small" onclick="closeModal()">إغلاق</button></div>${body}</div></div>`}
 function closeModal(){$("#modalRoot").innerHTML=""}
-function openTx(id){const old=id?state.transactions.find(x=>x.id===id):null,opts=activeCats().map(c=>`<option value="${c.id}" ${old?.category_id===c.id?'selected':''}>${esc(c.icon)} ${esc(c.name)}</option>`).join("");modal(old?'تعديل العملية':'إضافة عملية',`<label>النوع</label><select id="tt"><option value="expense" ${old?.type==='expense'?'selected':''}>مصروف</option><option value="income" ${old?.type==='income'?'selected':''}>دخل</option><option value="saving" ${old?.type==='saving'?'selected':''}>ادخار</option></select><label>الفئة</label><select id="tc">${opts}</select><label>المبلغ</label><input id="ta" type="number" value="${old?.amount||''}"><label>التاريخ</label><input id="td" type="date" value="${old?.date||new Date().toISOString().slice(0,10)}"><label>ملاحظة</label><input id="tn" value="${esc(old?.note||'')}"><button class="btn" style="width:100%" onclick="saveTx('${id||''}')">${old?'حفظ':'إضافة'}</button>${old?`<button class="btn danger" style="width:100%;margin-top:7px" onclick="deleteTx('${id}')">حذف العملية</button>`:''}`)}
+function catOptionsHtml(selectedId){
+ return topLevelCats().map(c=>{
+   let html=`<option value="${c.id}" ${selectedId===c.id?'selected':''}>${esc(c.icon)} ${esc(c.name)}</option>`;
+   childCats(c.id).forEach(k=>{html+=`<option value="${k.id}" ${selectedId===k.id?'selected':''}>&nbsp;&nbsp;↳ ${esc(k.icon)} ${esc(k.name)}</option>`});
+   return html;
+ }).join("");
+}
+function openTx(id){const old=id?state.transactions.find(x=>x.id===id):null,opts=catOptionsHtml(old?.category_id);modal(old?'تعديل العملية':'إضافة عملية',`<label>النوع</label><select id="tt"><option value="expense" ${old?.type==='expense'?'selected':''}>مصروف</option><option value="income" ${old?.type==='income'?'selected':''}>دخل</option><option value="saving" ${old?.type==='saving'?'selected':''}>ادخار</option></select><label>الفئة</label><select id="tc">${opts}</select><label>المبلغ</label><input id="ta" type="number" value="${old?.amount||''}"><label>التاريخ</label><input id="td" type="date" value="${old?.date||new Date().toISOString().slice(0,10)}"><label>ملاحظة</label><input id="tn" value="${esc(old?.note||'')}"><button class="btn" style="width:100%" onclick="saveTx('${id||''}')">${old?'حفظ':'إضافة'}</button>${old?`<button class="btn danger" style="width:100%;margin-top:7px" onclick="deleteTx('${id}')">حذف العملية</button>`:''}`)}
 async function saveTx(id){const amount=Number($("#ta").value);if(amount<=0)return;const date=$("#td").value||new Date().toISOString().slice(0,10);const obj={id:id||uid(),type:$("#tt").value,category_id:$("#tc").value,amount,date,month:monthKey(date),note:$("#tn").value||""};closeModal();if(id)await saveUpdate("transactions",id,obj,()=>{const i=state.transactions.findIndex(x=>x.id===id);if(i>=0)state.transactions[i]=obj});else await saveInsert("transactions",obj,()=>state.transactions.unshift(obj));toast("تم حفظ العملية")}
 async function deleteTx(id){if(!confirm('تحذف العملية؟'))return;closeModal();await saveDelete('transactions',id,()=>{state.transactions=state.transactions.filter(x=>x.id!==id)});toast('اتحذفت العملية')}
 async function quickSpend(catId){const amount=Number(prompt('المبلغ؟'));if(!amount||amount<=0)return;const obj={id:uid(),type:'expense',category_id:catId,amount,date:new Date().toISOString().slice(0,10),month:monthKey(),note:''};await saveInsert('transactions',obj,()=>state.transactions.unshift(obj));toast('اتسجل المصروف')}
@@ -369,6 +387,20 @@ async function toggleCommitment(id,checked){
    if(tx)await saveDelete('transactions',tx.id,()=>{state.transactions=state.transactions.filter(x=>x.id!==tx.id)});
    else render();
  }
+}
+function openSubCatModal(parentId){
+ modal('فئة فرعية جديدة',`<label>الاسم</label><input id="scName" placeholder="مثال: الأكل والشرب"><label>الرمز</label><input id="scIcon" placeholder="🍔"><button class="btn" style="width:100%" onclick="saveSubCat('${parentId}')">إضافة</button>`);
+}
+async function saveSubCat(parentId){
+ const name=$("#scName").value.trim();
+ if(!name)return;
+ const obj={id:uid(),name,icon:$("#scIcon").value||'▫️',percentage:0,type:'flexible',active:true,parent_id:parentId};
+ closeModal();
+ await saveInsert('categories',obj,()=>state.categories.push(obj));
+}
+async function deleteSubCat(id){
+ if(!confirm('تحذف الفئة الفرعية دي؟ العمليات المسجلة عليها هتفضل موجودة بس من غير تصنيف.'))return;
+ await saveUpdate('categories',id,{active:false},()=>{const c=state.categories.find(x=>x.id===id);if(c)c.active=false});
 }
 function openCat(id){const old=id?state.categories.find(x=>x.id===id):null;modal(old?'تعديل الفئة':'إضافة فئة',`<label>الاسم</label><input id="cn" value="${esc(old?.name||'')}"><label>الرمز</label><input id="ci" value="${esc(old?.icon||'🏷️')}"><label>النسبة %</label><input id="cp" type="number" value="${old?.percentage??''}"><label>النوع</label><select id="ct"><option value="fixed" ${old?.type==='fixed'?'selected':''}>ثابتة</option><option value="flexible" ${old?.type==='flexible'?'selected':''}>مرنة</option><option value="rollover" ${old?.type==='rollover'?'selected':''}>تراكمية</option><option value="goal-linked" ${old?.type==='goal-linked'?'selected':''}>مرتبطة بهدف</option></select><button class="btn" style="width:100%" onclick="saveCat('${id||''}')">${old?'حفظ':'إضافة'}</button>${old?`<button class="btn secondary" style="width:100%;margin-top:7px" onclick="toggleCat('${id}')">${old.active?'تعطيل':'تفعيل'} الفئة</button>`:''}`)}
 async function saveCat(id){const name=$("#cn").value.trim(),p=Number($("#cp").value);if(!name||p<0||p>100)return;const obj={id:id||uid(),name,icon:$("#ci").value||'🏷️',percentage:p,type:$("#ct").value,active:id?state.categories.find(x=>x.id===id).active:true};closeModal();if(id)await saveUpdate('categories',id,obj,()=>Object.assign(state.categories.find(c=>c.id===id),obj));else await saveInsert('categories',obj,()=>state.categories.push(obj));await upsertSnapshot();toast('تم حفظ الفئة')}
