@@ -26,15 +26,16 @@ body{
   -webkit-tap-highlight-color:transparent;
 }
 #app{max-width:480px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;}
-header{position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);z-index:5;padding:16px 16px 8px;display:flex;justify-content:space-between;align-items:center;}
+header{position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);z-index:5;padding:14px 16px 6px;display:flex;justify-content:space-between;align-items:center;}
 header h1{font-size:18px;margin:0;}
 header .headRight{display:flex;flex-direction:column;align-items:flex-end;gap:2px;}
 header span{color:var(--muted);font-size:13px;}
 #sync{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:4px;cursor:pointer;}
 .sync-dot{width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block;}
 .sync-dot.off{background:var(--orange);}
-main{flex:1;padding:8px 16px 90px;overflow-x:hidden;}
-.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:12px;}
+main{flex:1;padding:6px 14px 88px;overflow-x:hidden;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:10px;}
+.card+.card{margin-top:0;}
 .row{display:flex;justify-content:space-between;align-items:center;}
 .big{font-size:28px;font-weight:700;}
 .muted{color:var(--muted);font-size:13px;}
@@ -43,9 +44,11 @@ main{flex:1;padding:8px 16px 90px;overflow-x:hidden;}
 .bar-fill{height:100%;background:var(--primary);border-radius:8px;transition:width .3s;}
 .bar-fill.over{background:var(--red);}
 .bar-fill.warn{background:var(--orange);}
-.item,.goal-item,.cat-item,.tx-item{background:var(--card2);border-radius:12px;padding:12px;margin-bottom:8px;}
+.item,.goal-item,.cat-item,.tx-item{background:var(--card2);border-radius:12px;padding:12px;margin-bottom:8px;border:1px solid transparent;}
+.item.super{border-color:var(--primary);background:linear-gradient(0deg,var(--card2),var(--card2));}
+.super-badge{font-size:10px;background:var(--primary);color:#fff;padding:2px 7px;border-radius:20px;margin-right:6px;vertical-align:middle;}
 .item .row,.goal-item .row,.cat-item .row{margin-bottom:4px;}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
 .stat{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px;text-align:center;}
 .stat b{font-size:18px;display:block;margin-top:4px;}
 .positive{color:var(--green);}
@@ -60,8 +63,8 @@ nav button .ic{font-size:20px;}
 .btn.secondary{background:var(--card2);color:var(--text);}
 .btn.danger{background:var(--red);color:#fff;}
 .btn.small{width:auto;padding:8px 14px;font-size:13px;}
-input,select{width:100%;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px;color:var(--text);font-size:15px;margin-bottom:10px;}
-label{font-size:13px;color:var(--muted);display:block;margin-bottom:4px;}
+input,select{width:100%;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:11px 12px;color:var(--text);font-size:15px;margin-bottom:8px;}
+label{font-size:12px;color:var(--muted);display:block;margin-bottom:3px;margin-top:2px;}
 .fab{position:fixed;bottom:calc(70px + env(safe-area-inset-bottom,0px));left:16px;background:var(--primary);color:#fff;border:none;
   width:52px;height:52px;border-radius:50%;font-size:24px;box-shadow:0 4px 12px rgba(0,0,0,.3);z-index:9;max-width:480px;}
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:flex-end;z-index:20;}
